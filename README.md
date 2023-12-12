@@ -1,4 +1,4 @@
-Visualizing global Greenhouse gas emissions, 2015-2021
+### Visualizing global Greenhouse gas emissions, 2015-2021
 
 This repository contains the scripts for the data and visualization behind my GHG emissions dashboard, available here:
 
