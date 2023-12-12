@@ -192,24 +192,22 @@ server <- function(input, output) {
   output$t00_plotly <- renderPlotly({
     #PREPROCESS for plot
     filtered_data <- chart_data %>%
-      group_by(year) %>%
+      group_by(year, country) %>%
       summarize(
         Carbon_Dioxide = sum(Carbon_Dioxide, na.rm = TRUE),
         Methane = sum(Methane, na.rm = TRUE),
         Nitrous_oxide = sum(Nitrous_oxide, na.rm = TRUE),
       ) %>%
-      ungroup()%>%
-      arrange(year)
-    max_value <- max(filtered_data[[input$t00_variable]], na.rm = TRUE)
-    min_value <- min(filtered_data[[input$t00_variable]], na.rm = TRUE) - (0.3*min(filtered_data[[input$t00_variable]], na.rm = TRUE))
+      ungroup()
+
+
     #PLOT
-    fig00 <- ggplotly(ggplot(filtered_data, aes_string(x = 'year', y = input$t00_variable)) +
-                      geom_line() +
-                      geom_point() +
+    fig00 <- ggplotly(ggplot(filtered_data, aes(x = year, y = get(input$t00_variable), fill=reorder(country, -get(input$t00_variable)),
+                                                text = paste("Country:",country))) +
+                      geom_area(stat = "identity") +
                       labs(y = 'Emissions (m ton)', x = "Year", caption = 'Source: Climate Trace') +
                       theme_minimal() +
-                      scale_y_continuous(labels = function(x) format(x, scientific = FALSE),
-                                         limits = c(min_value, max_value)) +
+                      scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
                       scale_x_continuous(breaks = unique(filtered_data$year)) +
                       theme(
                         axis.text.x = element_text(color = "grey20", size = 12),
@@ -217,8 +215,10 @@ server <- function(input, output) {
                         axis.title.x = element_text(size=14),
                         axis.title.y = element_text(size=14),
                         plot.caption = element_text(size=10)
-                      ))
-    fig00 <- fig00 %>% config(displayModeBar = TRUE, modeBarButtonsToRemove = list(
+                      ), tooltip = 'text')
+    fig00 <- fig00 %>% 
+      layout(showlegend = FALSE) %>% 
+      config(displayModeBar = TRUE, modeBarButtonsToRemove = list(
       "zoom2d", "pan2d", "select2d", "lasso2d", "zoomIn2d", "zoomOut2d", "autoScale2d", 
       "resetScale2d", "zoom3d", "pan3d", "orbitRotation", "tableRotation", "hoverClosestCartesian", "hoverCompareCartesian"
     ))
